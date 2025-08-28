@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shanyraq PASS</title>
+    <style>
+        /* ===== Modern neon-glass theme with animations ===== */
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+            color: #e6f0ff;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background: linear-gradient(120deg, #0f172a 0%, #0b1220 35%, #0a2a3e 100%);
+        }
+
+        /* Animated ambient blobs */
+        .bg-blob, .bg-blob:before, .bg-blob:after {
+            position: absolute;
+            filter: blur(70px);
+            pointer-events: none;
+            transform: translateZ(0);
+            z-index: 0;
+        }
+        .bg-blob {
+            width: 70vmax; height: 70vmax;
+            top: -20vmax; right: -20vmax;
+            background: radial-gradient(circle at 30% 30%, #1cd9ff 0%, rgba(28,217,255,0) 55%),
+                        radial-gradient(circle at 80% 60%, #7c4dff 0%, rgba(124,77,255,0) 50%),
+                        radial-gradient(circle at 20% 80%, #00ffa9 0%, rgba(0,255,169,0) 45%);
+            animation: floatBlob 24s ease-in-out infinite alternate;
+        }
+        .bg-blob:before {
+            content: "";
+            width: 60vmax; height: 60vmax;
+            left: -25vmax; top: 15vmax;
+            background: radial-gradient(circle at 50% 50%, #ff6b6b 0%, rgba(255,107,107,0) 55%);
+            animation: floatBlob 30s ease-in-out infinite alternate-reverse;
+        }
+        .bg-blob:after {
+            content: "";
+            width: 50vmax; height: 50vmax;
+            right: -10vmax; bottom: -10vmax;
+            background: radial-gradient(circle at 50% 50%, #00c2ff 0%, rgba(0,194,255,0) 55%);
+            animation: floatBlob 28s ease-in-out infinite alternate;
+        }
+        @keyframes floatBlob {
+            0%   { transform: translate(-2%, -2%) scale(1); }
+            50%  { transform: translate(2%, 1%) scale(1.05); }
+            100% { transform: translate(3%, 3%) scale(1.02); }
+        }
+
+        /* Glass card with neon border */
+        .card {
+            position: relative;
+            z-index: 1;
+            width: 440px; max-width: 92vw;
+            padding: 30px 26px 26px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.12);
+            backdrop-filter: blur(14px) saturate(140%);
+        }
+        .card:before {
+            content: "";
+            position: absolute; inset: 0; border-radius: 18px; padding: 1px;
+            background: linear-gradient(135deg, rgba(124,77,255,.65), rgba(28,217,255,.65), rgba(0,255,169,.65));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+
+        .logo {
+            width: 56px; height: 56px; margin: 4px auto 8px; display: block; border-radius: 12px;
+            object-fit: cover; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+            animation: floatIcon 5s ease-in-out infinite;
+        }
+        @keyframes floatIcon { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) rotate(1deg) } }
+
+        .title {
+            text-align: center; margin: 2px 0 18px;
+            font-size: 26px; font-weight: 800; letter-spacing: .3px;
+            background: linear-gradient(90deg, #e7f5ff 0%, #d7faff 45%, #bfffe7 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            text-shadow: 0 0 18px rgba(28,217,255,0.25);
+        }
+
+        .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        label { font-size: 13px; color: rgba(226,232,240,.9); }
+        input, select {
+            width: 100%; max-width: 100%; height: 46px; padding: 0 14px; box-sizing: border-box;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.06); color: #eaf4ff; font-size: 15px; outline: none;
+            transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .06s ease;
+        }
+        /* Responsive two-column grid for compact fields */
+        .grid-2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin-bottom: 12px; }
+        @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* Remove icon style: keep consistent inputs */
+        input::placeholder { color: rgba(235,245,255,.55); }
+        select:disabled { opacity: .7; }
+        input:focus, select:focus {
+            border-color: rgba(28,217,255,.7);
+            box-shadow: 0 0 0 6px rgba(28,217,255,.12), 0 10px 30px rgba(0,0,0,.25);
+            background: rgba(255,255,255,0.09);
+        }
+        .error { border-color: rgba(239,68,68,.9) !important; box-shadow: 0 0 0 6px rgba(239,68,68,.18) !important; animation: shake .32s ease-in-out; }
+        @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-5px) } 75% { transform: translateX(5px) } }
+        .hint { font-size: 12px; color: rgba(226,232,240,.8); }
+
+        .actions { margin-top: 10px; }
+        button {
+            position: relative; overflow: hidden; width: 100%; height: 48px;
+            border: none; border-radius: 12px; cursor: pointer;
+            color: #0b1220; font-size: 16px; font-weight: 800; letter-spacing: .2px;
+            background: linear-gradient(120deg, #a1ffce, #faffd1, #a1fffe, #cfd9ff);
+            background-size: 300% 300%; animation: gradientMove 8s ease infinite;
+            transition: transform .06s ease, opacity .2s ease, filter .2s ease;
+        }
+        button:hover { filter: brightness(1.05); }
+        button:active { transform: translateY(1px) scale(.997); }
+        button:disabled { opacity: .6; cursor: not-allowed; filter: grayscale(.1) brightness(.9); }
+        @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
+        .ripple { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,.7); opacity: .75; pointer-events: none; animation: ripple .6s ease-out forwards; }
+        @keyframes ripple { to { transform: scale(12); opacity: 0; } }
+
+        .toast { position: fixed; bottom: 20px; right: 20px; z-index: 10; padding: 12px 16px; border-radius: 12px; color: #04210f; font-weight: 700; font-size: 14px; background: linear-gradient(120deg, #39ffa6, #d7ffea); box-shadow: 0 10px 30px rgba(0,0,0,.35); opacity: 0; transform: translateY(10px); transition: all .35s ease; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <div class="bg-blob"></div>
+    <main class="card" role="main">
+        <img class="logo" src="./logo.jpeg" alt="" aria-hidden="true">
+        <h1 class="title">Shanyraq PASS</h1>
+
+        <form id="passForm" novalidate>
+            <div class="field">
+                <label for="clientName">Имя клиента (необязательно)</label>
+                <input id="clientName" type="text" placeholder="Введите имя клиента" autocomplete="name" />
+            </div>
+
+            <div class="field">
+                <label for="clientEmail">Адрес эл. почты (необязательно)</label>
+                <input id="clientEmail" type="email" placeholder="name@example.com" autocomplete="email" />
+            </div>
+
+            <div class="field">
+                <label for="userId">ID (формат: TK1001)</label>
+                <input id="userId" type="text" inputmode="latin" placeholder="Введите ID" autocomplete="off" maxlength="6" />
+                <div class="hint">Только «TK» + 4 цифры. Пример: TK1001</div>
+            </div>
+
+            <div class="field">
+                <label for="category">Выберите категорию</label>
+                <select id="category">
+                    <option value="" selected disabled>Выберите категорию</option>
+                    <option value="club">Кружок</option>
+                    <option value="playroom">Игровой зал</option>
+                    <option value="cinema">Кинотеатр</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="subCategory">Выберите подкатегорию</label>
+                <select id="subCategory" disabled>
+                    <option value="" selected disabled>Сначала выберите категорию</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button id="submitBtn" type="button" disabled>Проверить</button>
+            </div>
+        </form>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        (function() {
+            // ВСТАВЬТЕ URL вашего опубликованного Apps Script Web App
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzVY5wIax6ciHwUWBDMqsF10Wy8aMQRwZjcTwqadzItMz_-LjWJswBRhbGq6Ont-y_B/exec';
+
+            const userIdInput = document.getElementById('userId');
+            const categorySelect = document.getElementById('category');
+            const subCategorySelect = document.getElementById('subCategory');
+            const submitBtn = document.getElementById('submitBtn');
+            const clientNameInput = document.getElementById('clientName');
+            const clientEmailInput = document.getElementById('clientEmail');
+
+            const optionsByCategory = {
+                club: [
+                    { value: 'dance-rythm', label: 'Танцы «Ритм»' },
+                    { value: 'robotics', label: 'Робототехника' }
+                ],
+                playroom: [
+                    { value: 'happylon', label: 'Happylon' },
+                    { value: 'kinder-park', label: 'Kinder Park' }
+                ],
+                cinema: [
+                    { value: 'kinopark', label: 'Kinopark' },
+                    { value: 'chaplin', label: 'Chaplin' }
+                ]
+            };
+
+            function validateId(value) {
+                // Must be exactly: TK + 4 digits
+                return /^TK\d{4}$/.test(value);
+            }
+
+            function populateSubcategories(category) {
+                subCategorySelect.innerHTML = '';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Выберите подкатегорию';
+                placeholder.disabled = true;
+                placeholder.selected = true;
+                subCategorySelect.appendChild(placeholder);
+
+                (optionsByCategory[category] || []).forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.label;
+                    subCategorySelect.appendChild(option);
+                });
+
+                subCategorySelect.disabled = !(optionsByCategory[category] || []).length;
+            }
+
+            function updateButtonState() {
+                const isValidId = validateId(userIdInput.value);
+                const hasCategory = !!categorySelect.value;
+                const hasSubCategory = !!subCategorySelect.value;
+                submitBtn.disabled = !(isValidId && hasCategory && hasSubCategory);
+            }
+
+            // Normalize and validate ID input
+            userIdInput.addEventListener('input', () => {
+                userIdInput.value = userIdInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+                const ok = validateId(userIdInput.value);
+                userIdInput.classList.toggle('error', userIdInput.value.length === 6 && !ok);
+                updateButtonState();
+            });
+
+            // Category change -> populate second select
+            categorySelect.addEventListener('change', () => {
+                populateSubcategories(categorySelect.value);
+                subCategorySelect.value = '';
+                updateButtonState();
+            });
+
+            // Subcategory change -> toggle button
+            subCategorySelect.addEventListener('change', updateButtonState);
+
+            // Ripple + toast
+            submitBtn.addEventListener('click', async (e) => {
+                if (submitBtn.disabled) return;
+
+                const rect = submitBtn.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                const size = Math.max(rect.width, rect.height);
+                ripple.className = 'ripple';
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                submitBtn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 700);
+
+                const payload = {
+                    id: userIdInput.value,
+                    category: categorySelect.options[categorySelect.selectedIndex].text,
+                    subcategory: subCategorySelect.options[subCategorySelect.selectedIndex].text,
+                    name: (clientNameInput.value || '').trim(),
+                    email: (clientEmailInput.value || '').trim()
+                };
+
+                // Проверяем, что указан корректный URL веб‑приложения Apps Script
+                const looksLikeScriptUrl = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test(WEB_APP_URL);
+                if (!looksLikeScriptUrl) {
+                    showToast('Неверный URL. Нужен адрес вида https://script.google.com/macros/s/.../exec');
+                    return;
+                }
+
+                // Попытка отправить в Google Apps Script
+                try {
+                    const res = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: payload.id,
+                            category: payload.category,
+                            venue: payload.subcategory,
+                            name: payload.name,
+                            email: payload.email
+                        }),
+                        mode: 'no-cors'
+                    });
+
+                    let statusText = '';
+                    try {
+                        const data = await res.json();
+                        statusText = data && data.status ? String(data.status) : '';
+                    } catch(_) { /* если CORS no-cors */ }
+
+                    showToast(statusText ? `Статус: ${statusText}` : `Отправлено: ${payload.id}`);
+                } catch (err) {
+                    showToast('Ошибка отправки. Проверьте URL веб‑приложения.');
+                }
+            });
+
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                clearTimeout(window.__toastTimer);
+                window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+            }
+        })();
+    </script>
+</body>
+</html>
